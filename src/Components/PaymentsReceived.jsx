@@ -35,11 +35,8 @@ const PaymentsReceived = ({ onNewClick, onClose }) => {
   const [selectedStatus, setSelectedStatus] = useState("All");
 
   useEffect(() => {
-    // Mock data
-    setTableData([
-      { id: 1, date: "2026-04-09", payment_no: "PAY-000001", reference: "REF-P01", cust_name: "Apex Logistics", invoice_no: "INV-001", mode: "Bank Transfer", amount: 15000, unused: 0 },
-      { id: 2, date: "2026-04-08", payment_no: "PAY-000002", reference: "REF-P02", cust_name: "Swift Services", invoice_no: "-", mode: "Cash", amount: 5000, unused: 5000 },
-    ]);
+    // Component mounted, no mock data
+    setTableData([]);
   }, []);
 
   const handleStatusMenuOpen = (event) => setAnchorEl(event.currentTarget);
@@ -152,26 +149,49 @@ const PaymentsReceived = ({ onNewClick, onClose }) => {
               <TableRow>
                 <TableCell sx={{ width: 50, backgroundColor: "#f9f9f9" }}><IconButton size="small"><ViewColumnIcon fontSize="small"/></IconButton></TableCell>
                 <TableCell sx={{ width: 50, backgroundColor: "#f9f9f9" }}><Checkbox size="small" checked={selectAll} onChange={handleSelectAllClick}/></TableCell>
-                {["Date", "Payment#", "Reference#", "Customer Name", "Invoice#", "Mode", "Amount", "Unused Amount"].map(h => (
+                {["Date", "Payment#", "Reference#", "Customer Name", "Invoice#", "Mode", "Amount", "Unused Amount", "Payment Type"].map(h => (
                   <TableCell key={h} sx={{ fontSize: "11px", fontWeight: 700, color: "#888", backgroundColor: "#f9f9f9" }}>{h.toUpperCase()}</TableCell>
                 ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {tableData.map((row) => (
-                <TableRow key={row.id} hover sx={{ cursor: "pointer" }}>
-                  <TableCell />
-                  <TableCell><Checkbox size="small" checked={selectedItems.includes(row.id)} onChange={e => handleCheckboxClick(e, row.id)}/></TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>{row.date}</TableCell>
-                  <TableCell sx={{ fontSize: "13px", color: "#408DFB" }}>{row.payment_no}</TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>{row.reference}</TableCell>
-                  <TableCell sx={{ fontSize: "13px", fontWeight: 600 }}>{row.cust_name}</TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>{row.invoice_no}</TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>{row.mode}</TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>₹{row.amount.toLocaleString()}</TableCell>
-                  <TableCell sx={{ fontSize: "13px", color: row.unused > 0 ? "red" : "inherit" }}>₹{row.unused.toLocaleString()}</TableCell>
-                </TableRow>
-              ))}
+              {tableData.length === 0 ? (
+                  <TableRow>
+                      <TableCell colSpan={11} align="center" sx={{ py: 12, borderBottom: "none" }}>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                              <Box component="img" src="/src/assets/truck.png" sx={{ width: 180, opacity: 0.8, mb: 1 }} />
+                              <Typography sx={{ fontWeight: 800, fontSize: "1.4rem", color: "#666", letterSpacing: 1 }}>SCHWING STETTER</Typography>
+                              <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 450, mb: 2 }}>
+                                  Currently, no payments are available. Select 'Create New' to add a new one.
+                              </Typography>
+                              <Button 
+                                  variant="contained" 
+                                  startIcon={<AddIcon />}
+                                  onClick={onNewClick}
+                                  sx={{ bgcolor: "#408DFB", textTransform: "none", px: 4, py: 1 }}
+                              >
+                                  CREATE NEW
+                              </Button>
+                          </Box>
+                      </TableCell>
+                  </TableRow>
+              ) : (
+                tableData.map((row) => (
+                  <TableRow key={row.id} hover sx={{ cursor: "pointer" }}>
+                    <TableCell />
+                    <TableCell><Checkbox size="small" checked={selectedItems.includes(row.id)} onChange={e => handleCheckboxClick(e, row.id)}/></TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.date}</TableCell>
+                    <TableCell sx={{ fontSize: "13px", color: "#408DFB" }}>{row.payment_no}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.reference}</TableCell>
+                    <TableCell sx={{ fontSize: "13px", fontWeight: 600 }}>{row.cust_name}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.invoice_no}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.mode}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>₹{row.amount.toLocaleString()}</TableCell>
+                    <TableCell sx={{ fontSize: "13px", color: row.unused > 0 ? "red" : "inherit" }}>₹{row.unused.toLocaleString()}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.payment_type}</TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>

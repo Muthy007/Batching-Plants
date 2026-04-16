@@ -12,6 +12,7 @@ import {
   Slide,
   DialogTitle
 } from '@mui/material';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import ExpandLess from '@mui/icons-material/ExpandLess';
@@ -38,12 +39,16 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 });
 
 const drawerWidth = 260;
+const lightTheme = createTheme({ palette: { mode: 'light' } });
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen = false, toggleSidebar = () => {} }) {
   const [openSales, setOpenSales] = useState(true);
   const [salesModalOpen, setSalesModalOpen] = useState(false);
-  const [activeModule, setActiveModule] = useState('Quotes'); // 'Quotes', 'Invoices', etc.
-  const [viewType, setViewType] = useState('list'); // 'list' or 'new'
+  const [activeModule, setActiveModule] = useState('Quotes');
+  const [viewType, setViewType] = useState('list');
+  const [newCustomer, setNewCustomer] = useState(null);
+  const [customerContext, setCustomerContext] = useState(null);
+  const [editingCustomer, setEditingCustomer] = useState(null);
 
   const handleClickSales = () => setOpenSales(!openSales);
 
@@ -62,39 +67,63 @@ export default function Sidebar() {
     switch (activeModule) {
       case 'Customers':
         return viewType === 'list' ? (
-          <CustomerMaster onClose={() => setSalesModalOpen(false)} onNewClick={() => setViewType('new')} />
+          <CustomerMaster
+            onClose={() => setSalesModalOpen(false)}
+            onNewClick={() => {
+              setEditingCustomer(null);
+              setViewType('new');
+            }}
+            addCustomer={newCustomer}
+            onNavigate={(module, context) => {
+              setCustomerContext(context);
+              setActiveModule(module);
+              setViewType('new');
+            }}
+            onEdit={(customer) => {
+              setEditingCustomer(customer);
+              setViewType('new');
+            }}
+          />
         ) : (
-          <ModalCustomerMaster handleClose={() => setViewType('list')} />
+          <ModalCustomerMaster
+            handleClose={() => setViewType('list')}
+            initialData={editingCustomer}
+            onSave={(customer) => {
+              setNewCustomer(customer);
+              setViewType('list');
+              setEditingCustomer(null);
+            }}
+          />
         );
       case 'Quotes':
         return viewType === 'list' ? (
           <Quotes onClose={() => setSalesModalOpen(false)} onNewClick={() => setViewType('new')} />
         ) : (
-          <NewQuotes handleClose={() => setViewType('list')} />
+          <NewQuotes handleClose={() => setViewType('list')} initialCustomer={customerContext} />
         );
       case 'Invoices':
         return viewType === 'list' ? (
           <Invoice onClose={() => setSalesModalOpen(false)} onNewClick={() => setViewType('new')} />
         ) : (
-          <NewInvoice handleClose={() => setViewType('list')} />
+          <NewInvoice handleClose={() => setViewType('list')} initialCustomer={customerContext} />
         );
       case 'Sales Orders':
         return viewType === 'list' ? (
           <SalesOrder onClose={() => setSalesModalOpen(false)} onNewClick={() => setViewType('new')} />
         ) : (
-          <NewSalesOrder handleClose={() => setViewType('list')} />
+          <NewSalesOrder handleClose={() => setViewType('list')} initialCustomer={customerContext} />
         );
       case 'Delivery Challans':
         return viewType === 'list' ? (
           <DeliveryChallan onClose={() => setSalesModalOpen(false)} onNewClick={() => setViewType('new')} />
         ) : (
-          <NewDeliveryChallan handleClose={() => setViewType('list')} />
+          <NewDeliveryChallan handleClose={() => setViewType('list')} initialCustomer={customerContext} />
         );
       case 'Payments Received':
         return viewType === 'list' ? (
           <PaymentsReceived onClose={() => setSalesModalOpen(false)} onNewClick={() => setViewType('new')} />
         ) : (
-          <NewPaymentsReceived handleClose={() => setViewType('list')} />
+          <NewPaymentsReceived handleClose={() => setViewType('list')} initialCustomer={customerContext} />
         );
       case 'Recurring Invoices':
         return viewType === 'list' ? (
@@ -119,9 +148,11 @@ export default function Sidebar() {
   };
 
   return (
-    <>
+    <ThemeProvider theme={lightTheme}>
       <Drawer
-        variant="permanent"
+        variant="temporary"
+        open={isOpen}
+        onClose={toggleSidebar}
         sx={{
           width: drawerWidth,
           flexShrink: 0,
@@ -227,6 +258,6 @@ export default function Sidebar() {
           {renderModuleContent()}
         </Box>
       </Dialog>
-    </>
+    </ThemeProvider>
   );
 }

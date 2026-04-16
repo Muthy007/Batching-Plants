@@ -65,14 +65,13 @@ const Quotes = ({ onNewClick, onClose }) => {
     "Expiry Date": true,
     "Company Name": true,
     "Accepted Date": true,
+    "Declined Date": true,
+    "Sales Person": true,
   });
 
   useEffect(() => {
-    // Mock data for UI development
-    setQuoteTable([
-      { id: 1, quote_date: "2026-04-09", quote_no: "QT-000001", reference: "REF-001", cust_name: "John Doe", status: "Draft", total: 5000, sub_total: 4500, exp_date: "2026-05-09", company_name: "ABC Corp", status_color: "gray" },
-      { id: 2, quote_date: "2026-04-09", quote_no: "QT-000002", reference: "REF-002", cust_name: "Jane Smith", status: "Sent", total: 12000, sub_total: 11000, exp_date: "2026-05-09", company_name: "XYZ Ltd", status_color: "blue" },
-    ]);
+    // Component mounted, no mock data
+    setQuoteTable([]);
   }, []);
 
   const handleStatusMenuOpen = (event) => setAnchorEl(event.currentTarget);
@@ -206,7 +205,7 @@ const Quotes = ({ onNewClick, onClose }) => {
                 {[
                   "DATE", "QUOTE NUMBER", "REFERENCE#", "CUSTOMER NAME", 
                   "QUOTE STATUS", "TOTAL", "SUB TOTAL", "EXPIRY DATE", 
-                  "COMPANY NAME", "ACCEPTED DATE"
+                  "COMPANY NAME", "ACCEPTED DATE", "DECLINED DATE", "SALES PERSON"
                 ].map((header) => (
                   selectedColumns[header] !== false && (
                     <TableCell key={header} sx={{ 
@@ -224,37 +223,61 @@ const Quotes = ({ onNewClick, onClose }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {quoteTable.map((row, index) => (
-                <TableRow key={index} hover sx={{ cursor: "pointer" }}>
-                  <TableCell />
-                  <TableCell>
-                    <Checkbox size="small" checked={selectedItems.includes(row.id)} onChange={(e) => handleCheckboxClick(e, row.id)} />
-                  </TableCell>
-                  <TableCell sx={{ fontSize: "13px", color: row.status_color === "red" ? "red" : "#333" }}>{row.quote_date}</TableCell>
-                  <TableCell sx={{ fontSize: "13px", color: "#408DFB" }}>{row.quote_no}</TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>{row.reference}</TableCell>
-                  <TableCell sx={{ fontSize: "13px", fontWeight: 600 }}>{row.cust_name}</TableCell>
-                  <TableCell>
-                    <Box sx={{ 
-                      display: "inline-block", 
-                      px: 1, 
-                      py: 0.2, 
-                      borderRadius: "4px", 
-                      fontSize: "11px", 
-                      fontWeight: 600,
-                      backgroundColor: row.status === "Draft" ? "#f0f0f0" : "#e3f2fd",
-                      color: row.status === "Draft" ? "#666" : "#1976d2"
-                    }}>
-                      {row.status.toUpperCase()}
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>₹{row.total.toLocaleString()}</TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>₹{row.sub_total.toLocaleString()}</TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>{row.exp_date}</TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>{row.company_name}</TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>{row.accepted_date || "-"}</TableCell>
-                </TableRow>
-              ))}
+              {quoteTable.length === 0 ? (
+                  <TableRow>
+                      <TableCell colSpan={selectedCount + 2} align="center" sx={{ py: 12, borderBottom: "none" }}>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                              <Box component="img" src="/src/assets/truck.png" sx={{ width: 180, opacity: 0.8, mb: 1 }} />
+                              <Typography sx={{ fontWeight: 800, fontSize: "1.4rem", color: "#666", letterSpacing: 1 }}>SCHWING STETTER</Typography>
+                              <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 450, mb: 2 }}>
+                                  Currently, no quotes are available. Select 'Create New' to add a new one.
+                              </Typography>
+                              <Button 
+                                  variant="contained" 
+                                  startIcon={<AddIcon />}
+                                  onClick={onNewClick}
+                                  sx={{ bgcolor: "#408DFB", textTransform: "none", px: 4, py: 1 }}
+                              >
+                                  CREATE NEW
+                              </Button>
+                          </Box>
+                      </TableCell>
+                  </TableRow>
+              ) : (
+                quoteTable.map((row, index) => (
+                  <TableRow key={index} hover sx={{ cursor: "pointer" }}>
+                    <TableCell />
+                    <TableCell>
+                      <Checkbox size="small" checked={selectedItems.includes(row.id)} onChange={(e) => handleCheckboxClick(e, row.id)} />
+                    </TableCell>
+                    <TableCell sx={{ fontSize: "13px", color: row.status_color === "red" ? "red" : "#333" }}>{row.quote_date}</TableCell>
+                    <TableCell sx={{ fontSize: "13px", color: "#408DFB" }}>{row.quote_no}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.reference}</TableCell>
+                    <TableCell sx={{ fontSize: "13px", fontWeight: 600 }}>{row.cust_name}</TableCell>
+                    <TableCell>
+                      <Box sx={{ 
+                        display: "inline-block", 
+                        px: 1, 
+                        py: 0.2, 
+                        borderRadius: "4px", 
+                        fontSize: "11px", 
+                        fontWeight: 600,
+                        backgroundColor: row.status === "Draft" ? "#f0f0f0" : "#e3f2fd",
+                        color: row.status === "Draft" ? "#666" : "#1976d2"
+                      }}>
+                        {row.status.toUpperCase()}
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>₹{row.total.toLocaleString()}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>₹{row.sub_total.toLocaleString()}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.exp_date}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.company_name}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.accepted_date || "-"}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.declined_date || "-"}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.sales_person || "-"}</TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>

@@ -35,11 +35,8 @@ const SalesOrder = ({ onNewClick, onClose }) => {
   const [selectedStatus, setSelectedStatus] = useState("All");
 
   useEffect(() => {
-    // Mock data
-    setOrderTable([
-      { id: 1, date: "2026-04-09", order_no: "SO-000001", reference: "REF-S01", cust_name: "Tech Solutions", status: "Open", amount: 25000, shipment_date: "2026-04-15" },
-      { id: 2, date: "2026-04-08", order_no: "SO-000002", reference: "REF-S02", cust_name: "Mega Store", status: "Draft", amount: 12000, shipment_date: "2026-04-20" },
-    ]);
+    // Component mounted, no mock data
+    setOrderTable([]);
   }, []);
 
   const handleStatusMenuOpen = (event) => setAnchorEl(event.currentTarget);
@@ -152,33 +149,69 @@ const SalesOrder = ({ onNewClick, onClose }) => {
               <TableRow>
                 <TableCell sx={{ width: 50, backgroundColor: "#f9f9f9" }}><IconButton size="small"><ViewColumnIcon fontSize="small"/></IconButton></TableCell>
                 <TableCell sx={{ width: 50, backgroundColor: "#f9f9f9" }}><Checkbox size="small" checked={selectAll} onChange={handleSelectAllClick}/></TableCell>
-                {["Date", "Order#", "Reference#", "Customer Name", "Status", "Amount", "Shipment Date"].map(h => (
-                  <TableCell key={h} sx={{ fontSize: "11px", fontWeight: 700, color: "#888", backgroundColor: "#f9f9f9" }}>{h.toUpperCase()}</TableCell>
+                {[
+                  "SALES ORDER#", "REFERENCE#", "CUSTOMER NAME#", "DATE", 
+                  "INVOICED", "PAYMENT", "AMOUNT", "EXCEPTED SHIPMENT DATE", 
+                  "ORDER STATUS", "DELIVERY MENTHOD", "SALES PERSON", "INVOICED AMOUNT", 
+                  "STATUS", "COMPANY NAME"
+                ].map(h => (
+                  <TableCell key={h} sx={{ fontSize: "11px", fontWeight: 700, color: "#888", backgroundColor: "#f9f9f9", whiteSpace: "nowrap" }}>{h}</TableCell>
                 ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {orderTable.map((row) => (
-                <TableRow key={row.id} hover sx={{ cursor: "pointer" }}>
-                  <TableCell />
-                  <TableCell><Checkbox size="small" checked={selectedItems.includes(row.id)} onChange={e => handleCheckboxClick(e, row.id)}/></TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>{row.date}</TableCell>
-                  <TableCell sx={{ fontSize: "13px", color: "#408DFB" }}>{row.order_no}</TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>{row.reference}</TableCell>
-                  <TableCell sx={{ fontSize: "13px", fontWeight: 600 }}>{row.cust_name}</TableCell>
-                  <TableCell>
-                    <Typography sx={{ 
-                      fontSize: "11px", fontWeight: 700, px: 1, py: 0.2, borderRadius: 1, display: "inline-block",
-                      backgroundColor: row.status === "Open" ? "#e3f2fd" : "#f0f0f0",
-                      color: row.status === "Open" ? "#1976d2" : "#666"
-                    }}>
-                      {row.status.toUpperCase()}
-                    </Typography>
-                  </TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>₹{row.amount.toLocaleString()}</TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>{row.shipment_date}</TableCell>
-                </TableRow>
-              ))}
+              {orderTable.length === 0 ? (
+                  <TableRow>
+                      <TableCell colSpan={16} align="center" sx={{ py: 12, borderBottom: "none" }}>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                              <Box component="img" src="/src/assets/truck.png" sx={{ width: 180, opacity: 0.8, mb: 1 }} />
+                              <Typography sx={{ fontWeight: 800, fontSize: "1.4rem", color: "#666", letterSpacing: 1 }}>SCHWING STETTER</Typography>
+                              <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 450, mb: 2 }}>
+                                  Currently, no sales orders are available. Select 'Create New' to add a new one.
+                              </Typography>
+                              <Button 
+                                  variant="contained" 
+                                  startIcon={<AddIcon />}
+                                  onClick={onNewClick}
+                                  sx={{ bgcolor: "#408DFB", textTransform: "none", px: 4, py: 1 }}
+                              >
+                                  CREATE NEW
+                              </Button>
+                          </Box>
+                      </TableCell>
+                  </TableRow>
+              ) : (
+                orderTable.map((row) => (
+                  <TableRow key={row.id} hover sx={{ cursor: "pointer" }}>
+                    <TableCell />
+                    <TableCell><Checkbox size="small" checked={selectedItems.includes(row.id)} onChange={e => handleCheckboxClick(e, row.id)}/></TableCell>
+                    <TableCell sx={{ fontSize: "13px", color: "#408DFB" }}>{row.order_no || "-"}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.reference || "-"}</TableCell>
+                    <TableCell sx={{ fontSize: "13px", fontWeight: 600 }}>{row.cust_name || "-"}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.date || "-"}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.invoiced || "-"}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.payment || "-"}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.amount ? `₹${row.amount.toLocaleString()}` : "-"}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.shipment_date || "-"}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.order_status || "-"}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.delivery_method || "-"}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.sales_person || "-"}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.invoiced_amount ? `₹${row.invoiced_amount.toLocaleString()}` : "-"}</TableCell>
+                    <TableCell>
+                      {row.status ? (
+                        <Typography sx={{ 
+                          fontSize: "11px", fontWeight: 700, px: 1, py: 0.2, borderRadius: 1, display: "inline-block",
+                          backgroundColor: row.status === "Open" ? "#e3f2fd" : "#f0f0f0",
+                          color: row.status === "Open" ? "#1976d2" : "#666"
+                        }}>
+                          {row.status.toUpperCase()}
+                        </Typography>
+                      ) : "-"}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.company_name || "-"}</TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>

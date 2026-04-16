@@ -575,8 +575,8 @@ export default function CustomerTripDetails({ mode = 'light' }) {
         alignItems: 'center',
         justifyContent: 'space-between',
         p: "10px 30px",
-        borderBottom: "1px solid #eee",
-        bgcolor: "#F9F9FB",
+        borderBottom: `1px solid ${isDark ? '#333' : '#eee'}`,
+        bgcolor: isDark ? '#1e1e1e' : '#F9F9FB',
         minHeight: "75px",
         position: 'sticky',
         top: 0,
@@ -587,7 +587,7 @@ export default function CustomerTripDetails({ mode = 'light' }) {
           <IconButton onClick={() => navigate(-1)} sx={{ color: 'text.primary' }}>
             <ArrowBackIosNewIcon sx={{ fontSize: 20 }} />
           </IconButton>
-          <Typography sx={{ fontWeight: 700, fontSize: "1.5rem", color: "#1a1a1a", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '400px' }}>
+          <Typography sx={{ fontWeight: 700, fontSize: "1.5rem", color: isDark ? '#fff' : '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '400px' }}>
             {customer.displayName || customer.name}
           </Typography>
         </Box>

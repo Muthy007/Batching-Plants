@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import MenuIcon from '@mui/icons-material/Menu';
 import {
     Box, Typography, Grid, IconButton, Avatar, Switch, TextField,
     InputAdornment, Card, CardContent, Divider, Button, Chip, CardMedia
@@ -24,6 +25,7 @@ const MOCK_EQUIPMENTS = [
 
 export default function Dashboard({ toggleColorMode, mode }) {
     const [searchQuery, setSearchQuery] = useState("");
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -37,7 +39,7 @@ export default function Dashboard({ toggleColorMode, mode }) {
 
     return (
         <Box sx={{ display: 'flex' }}>
-            <Sidebar />
+            <Sidebar isOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen(false)} />
             <Box component="main" sx={{ 
                 flexGrow: 1,
                 minHeight: "100vh", 
@@ -50,16 +52,21 @@ export default function Dashboard({ toggleColorMode, mode }) {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    borderBottom: `1px solid #eee`,
-                    bgcolor: '#F9F9FB',
+                    borderBottom: `1px solid ${mode === 'light' ? '#eee' : '#333'}`,
+                    bgcolor: mode === 'light' ? '#F9F9FB' : '#1e1e1e',
                     minHeight: "75px",
                     position: 'sticky',
                     top: 0,
                     zIndex: 10
                 }}>
-                <Typography sx={{ fontWeight: 700, fontSize: "1.5rem", color: "#1a1a1a" }}>
-                    Elantris Technologies Pvt Ltd
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <IconButton onClick={() => setSidebarOpen(true)}>
+                        <MenuIcon sx={{ color: mode === 'light' ? '#1a1a1a' : '#fff' }} />
+                    </IconButton>
+                    <Typography sx={{ fontWeight: 700, fontSize: "1.5rem", color: mode === 'light' ? "#1a1a1a" : "#fff" }}>
+                        Elantris Technologies Pvt Ltd
+                    </Typography>
+                </Box>
 
                 <Box sx={{ display: 'flex', gap: { xs: 1, sm: 3 }, alignItems: 'center' }}>
 

@@ -25,7 +25,17 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 
-const NewRecurringInvoice = ({ handleClose }) => {
+const NewRecurringInvoice = ({ handleClose, initialCustomer }) => {
+  const STORAGE_KEY = "batchingplant_customers";
+  const [customers, setCustomers] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [selectedCustomer, setSelectedCustomer] = useState(initialCustomer || null);
   const [items, setItems] = useState([{ id: Date.now(), item: null, quantity: 1, rate: 0, amount: 0 }]);
   const [profileName, setProfileName] = useState("");
   const [repeatEvery, setRepeatEvery] = useState(1);
@@ -69,7 +79,19 @@ const NewRecurringInvoice = ({ handleClose }) => {
 
         <Box sx={{ flexGrow: 1, overflowY: "auto", p: 4 }}>
           <Grid container spacing={2} sx={{ maxWidth: 800 }}>
-             <Grid item xs={12} sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { xs: "flex-start", sm: "center" }, gap: { xs: 1, sm: 0 } }}>
+             <Grid item xs={12} sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { xs: "flex-start", sm: "center" }, gap: { xs: 1, sm: 0 }, mb: 2 }}>
+                <Typography sx={{ width: { xs: "100%", sm: 160 }, fontWeight: "600", color: "red", fontSize: "0.9rem" }}>Customer Name*</Typography>
+                <Autocomplete 
+                   fullWidth 
+                   options={customers} 
+                   getOptionLabel={(o) => o.name || ""} 
+                   value={selectedCustomer} 
+                   onChange={(_, v) => setSelectedCustomer(v)} 
+                   renderInput={(params) => <TextField {...params} size="small" placeholder="Select Customer" />} 
+                />
+             </Grid>
+
+             <Grid item xs={12} sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { xs: "flex-start", sm: "center" }, gap: { xs: 1, sm: 0 }, mb: 2 }}>
                 <Typography sx={{ width: { xs: "100%", sm: 160 }, fontWeight: "600", color: "red", fontSize: "0.9rem" }}>Profile Name*</Typography>
                 <TextField size="small" fullWidth value={profileName} onChange={(e) => setProfileName(e.target.value)} />
              </Grid>

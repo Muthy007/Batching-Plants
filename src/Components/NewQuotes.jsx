@@ -37,8 +37,17 @@ import ModalManageTcs from "../UsableContent/ModalManageTcs";
 import ModalManageTds from "../UsableContent/ModalManageTds";
 import SuiSnackbar from "../Snackbars/SuiSnackbar";
 
-const NewQuotes = ({ handleClose }) => {
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
+const NewQuotes = ({ handleClose, initialCustomer }) => {
+  const STORAGE_KEY = "batchingplant_customers";
+  const [customers, setCustomers] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [selectedCustomer, setSelectedCustomer] = useState(initialCustomer || null);
   const [quoteNumber, setQuoteNumber] = useState("QT-001");
   const [quoteDate, setQuoteDate] = useState(dayjs());
   const [expiryDate, setExpiryDate] = useState(dayjs().add(30, 'day'));
@@ -67,12 +76,6 @@ const NewQuotes = ({ handleClose }) => {
     "& .MuiOutlinedInput-root": { height: "32px", fontSize: "13px", borderRadius: "2px", "& fieldset": { borderColor: "#dcdfe6" } },
     "& .MuiInputBase-input": { padding: "0 10px", height: "32px" }
   };
-
-  // Mock Data
-  const customers = [
-    { label: "Acme Corp", email: "contact@acme.com", address: "123 Industrial Way" },
-    { label: "Global Industries", email: "info@global.com", address: "456 Tech Park" },
-  ];
 
   const products = [
     { label: "Concrete Mixer", rate: 50000, description: "Heavy duty mixer" },
@@ -103,13 +106,21 @@ const NewQuotes = ({ handleClose }) => {
                 updated.description = value.description;
             }
             // Recalculate amount
-            const baseAmount = updated.quantity * updated.rate;
-            const discVal = updated.discountType === '%' ? (baseAmount * updated.discount / 100) : updated.discount;
+            const baseAmount = parseFloat(updated.quantity || 0) * parseFloat(updated.rate || 0);
+            const discVal = updated.discountType === '%' ? (baseAmount * parseFloat(updated.discount || 0) / 100) : parseFloat(updated.discount || 0);
             updated.amount = baseAmount - discVal;
             return updated;
         }
         return item;
     }));
+  };
+
+  const onCustomerChange = (_, v) => {
+    setSelectedCustomer(v);
+    if (v) {
+      // Auto-fill place of supply if needed
+      // setPlaceOfSupply(v.placeOfSupply); 
+    }
   };
 
   const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
@@ -140,17 +151,64 @@ const NewQuotes = ({ handleClose }) => {
 
         {/* Form Content */}
         <Box sx={{ flex: 1, overflowY: "auto", p: { xs: "20px", md: "30px 50px" } }}>
-          <Box sx={{ maxWidth: "800px" }}>
-            {/* Customer Name */}
-            <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { xs: "flex-start", sm: "center" }, mb: "14px", gap: { xs: 1, sm: 0 } }}>
-              <Typography sx={{ ...labelStyle, color: "red" }}>Customer Name*</Typography>
-              <Autocomplete
-                options={customers}
-                value={selectedCustomer}
-                onChange={(_, v) => setSelectedCustomer(v)}
-                fullWidth
-                renderInput={(params) => <TextField {...params} placeholder="Select Customer" sx={inputSx} />}
-              />
+          <Box sx={{ maxWidth: "1150px", mx: "auto", width: "100%" }}>
+            {/* Customer Name Row */}
+            <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: "flex-start", mb: 3 }}>
+              <Typography sx={{ ...labelStyle, color: "#d32f2f", mt: 1 }}>Customer Name*</Typography>
+              <Box sx={{ flexGrow: 1, maxWidth: "550px" }}>
+                <Autocomplete
+                  options={customers}
+                  getOptionLabel={(option) => option.name || ""}
+                  value={selectedCustomer}
+                  onChange={onCustomerChange}
+                  sx={{ width: "100%" }}
+                  renderInput={(params) => <TextField {...params} placeholder="Select Customer" sx={inputSx} />}
+                />
+                
+                {/* Dynamic Address Display */}
+                {selectedCustomer && (
+                  <Box sx={{ mt: 3, display: "flex", gap: 6 }}>
+                    {/* Billing Address */}
+                    <Box sx={{ flex: 1 }}>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1 }}>
+                        <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#888" }}>BILLING ADDRESS</Typography>
+                        <EditOutlinedIcon sx={{ fontSize: 13, color: "#408DFB", cursor: "pointer" }} />
+                      </Box>
+                      <Typography sx={{ fontSize: "13px", color: "#111", lineHeight: 1.6 }}>
+                        {selectedCustomer.billingAttention && <>{selectedCustomer.billingAttention}<br /></>}
+                        {selectedCustomer.billingAddress1}<br />
+                        {selectedCustomer.billingAddress2 && <>{selectedCustomer.billingAddress2}<br /></>}
+                        {selectedCustomer.billingCity}, {selectedCustomer.billingState} {selectedCustomer.billingZip}<br />
+                        {selectedCustomer.billingCountry}<br />
+                        {selectedCustomer.billingPhone && <>Phone No: {selectedCustomer.billingPhone}</>}
+                      </Typography>
+                    </Box>
+
+                    {/* Shipping Address */}
+                    <Box sx={{ flex: 1 }}>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1 }}>
+                        <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#888" }}>SHIPPING ADDRESS</Typography>
+                        <EditOutlinedIcon sx={{ fontSize: 13, color: "#408DFB", cursor: "pointer" }} />
+                      </Box>
+                      <Typography sx={{ fontSize: "13px", color: "#111", lineHeight: 1.6 }}>
+                        {selectedCustomer.shippingAttention && <>{selectedCustomer.shippingAttention}<br /></>}
+                        {selectedCustomer.shippingAddress1}<br />
+                        {selectedCustomer.shippingAddress2 && <>{selectedCustomer.shippingAddress2}<br /></>}
+                        {selectedCustomer.shippingCity}, {selectedCustomer.shippingState} {selectedCustomer.shippingZip}<br />
+                        {selectedCustomer.shippingCountry}<br />
+                        {selectedCustomer.shippingPhone && <>Phone No: {selectedCustomer.shippingPhone}</>}
+                      </Typography>
+                    </Box>
+                  </Box>
+                )}
+
+                {selectedCustomer && (
+                  <Box sx={{ mt: 3, display: "flex", alignItems: "center", gap: 1 }}>
+                    <Typography sx={{ fontSize: "13px", color: "#888" }}>GST Treatment :</Typography>
+                    <Typography sx={{ fontSize: "13px", fontWeight: 500, color: "#333" }}>{selectedCustomer.gstTreatment || "Registered Business - Regular"}</Typography>
+                  </Box>
+                )}
+              </Box>
             </Box>
 
             {/* Quote# */}
@@ -177,47 +235,35 @@ const NewQuotes = ({ handleClose }) => {
               <Typography sx={labelStyle}>Reference#</Typography>
               <TextField 
                 placeholder="Enter Reference" 
-                sx={{ ...inputSx, width: { xs: "100%", sm: "400px" } }} 
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
+                sx={{ ...inputSx, width: "100%", maxWidth: "550px" }} 
               />
             </Box>
 
-            {/* Quote Date and Expiry Date */}
-            <Box sx={{ display: "flex", flexDirection: { xs: "column", lg: "row" }, mb: "14px", gap: { xs: 0, lg: 4 } }}>
-              <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { xs: "flex-start", sm: "center" }, mb: { xs: "14px", lg: 0 }, gap: { xs: 1, sm: 0 } }}>
-                <Typography sx={{ ...labelStyle, color: "red" }}>Quote Date*</Typography>
+            {/* Dates Row */}
+            <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: "center", mb: 2 }}>
+              <Typography sx={{ ...labelStyle, color: "#d32f2f" }}>Quote Date*</Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexGrow: 1, maxWidth: "550px" }}>
                 <DatePicker 
                   value={quoteDate} 
-                  onChange={setQuoteDate} 
-                  slotProps={{ textField: { sx: { ...inputSx, width: { xs: "100%", sm: "180px" } } } }} 
+                  onChange={(v) => setQuoteDate(v)}
+                  slotProps={{ textField: { sx: { ...inputSx, width: "180px" } } }} 
                 />
-              </Box>
-              <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { xs: "flex-start", sm: "center" }, gap: { xs: 1, sm: 0 } }}>
-                <Typography sx={{ ...labelStyle, width: { xs: "160px", lg: "100px" } }}>Expiry Date</Typography>
+                <Typography sx={{ fontSize: "13px", color: "#444" }}>Expiry Date</Typography>
                 <DatePicker 
-                  value={expiryDate} 
-                  onChange={setExpiryDate} 
-                  slotProps={{ textField: { sx: { ...inputSx, width: { xs: "100%", sm: "180px" } } } }} 
+                  value={expiryDate}
+                  onChange={(v) => setExpiryDate(v)}
+                  slotProps={{ textField: { sx: { ...inputSx, width: "180px" } } }} 
                 />
               </Box>
             </Box>
 
-            {/* Salesperson */}
-            <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { xs: "flex-start", sm: "center" }, mb: "14px", gap: { xs: 1, sm: 0 } }}>
-              <Typography sx={labelStyle}>Salesperson</Typography>
-              <Autocomplete
-                options={salespersons}
-                value={selectedSalesperson}
-                onChange={(_, v) => setSelectedSalesperson(v)}
-                fullWidth
-                renderInput={(params) => <TextField {...params} placeholder="Select Salesperson" sx={inputSx} />}
-              />
-            </Box>
-
-            {/* Subject */}
-            <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { xs: "flex-start", sm: "flex-start" }, mb: "14px", gap: { xs: 1, sm: 0 } }}>
-              <Typography sx={{ ...labelStyle, mt: "8px" }}>Subject</Typography>
+            <Divider sx={{ my: 4 }} />
+            
+            {/* Subject Row */}
+            <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: "flex-start", mb: 4 }}>
+              <Typography sx={labelStyle}>Subject</Typography>
               <TextField 
                 multiline 
                 rows={2} 
@@ -225,9 +271,8 @@ const NewQuotes = ({ handleClose }) => {
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 sx={{ 
-                  "& .MuiOutlinedInput-root": { fontSize: "13px", borderRadius: "2px", "& fieldset": { borderColor: "#dcdfe6" } },
-                  "& .MuiInputBase-input": { padding: "10px" },
-                  width: "100%"
+                    "& .MuiOutlinedInput-root": { fontSize: "13px", borderRadius: "2px", "& fieldset": { borderColor: "#dcdfe6" } },
+                    width: "100%", maxWidth: "550px" 
                 }} 
               />
             </Box>
@@ -379,23 +424,24 @@ const NewQuotes = ({ handleClose }) => {
 
         {/* Footer */}
         <Box sx={{ 
-          p: "14px 20px", 
-          borderTop: "1px solid #f0f0f0", 
+          p: "18px 50px", 
+          borderTop: "1px solid #eee", 
           display: "flex", 
-          gap: "10px", 
+          gap: 2, 
           bgcolor: "#F9F9FB",
           position: 'sticky',
           bottom: 0,
           zIndex: 10
         }}>
-          <Button variant="contained" sx={{ backgroundColor: "#408DFB", height: "36px", fontSize: "14px", fontWeight: 600, textTransform: "none", px: 4 }}>Save</Button>
-          <Button onClick={handleClose} variant="outlined" sx={{ height: "36px", fontSize: "14px", fontWeight: 600, textTransform: "none", px: 4, color: '#666', borderColor: '#ddd' }}>Cancel</Button>
+          <Button variant="contained" sx={{ bgcolor: "#408DFB", textTransform: "none", px: 4, fontWeight: 700, borderRadius: "2px" }}>SAVE AND SEND</Button>
+          <Button variant="contained" sx={{ bgcolor: "#408DFB", textTransform: "none", px: 4, fontWeight: 700, borderRadius: "2px" }}>SAVE AS DRAFT</Button>
+          <Button onClick={handleClose} variant="outlined" sx={{ height: "36px", fontSize: "14px", fontWeight: 600, textTransform: "none", px: 4, color: '#333', borderColor: '#ddd', borderRadius: "2px", bgcolor: "#fff" }}>CANCEL</Button>
         </Box>
 
         {/* Sub-modals */}
-        <Dialog open={openSeries} fullWidth maxWidth="md"><ModalEditableSeries handleClosePrefix={() => setOpenSeries(false)} /></Dialog>
-        <Dialog open={openTcs} fullWidth maxWidth="md"><ModalManageTcs handleManageTcsClose={() => setOpenTcs(false)} /></Dialog>
-        <Dialog open={openTds} fullWidth maxWidth="md"><ModalManageTds handleManageTdsClose={() => setOpenTds(false)} /></Dialog>
+        <Dialog open={openSeries} fullWidth maxWidth="md" onClose={() => setOpenSeries(false)}><ModalEditableSeries handleClosePrefix={() => setOpenSeries(false)} /></Dialog>
+        <Dialog open={openTcs} fullWidth maxWidth="md" onClose={() => setOpenTcs(false)}><ModalManageTcs handleManageTcsClose={() => setOpenTcs(false)} /></Dialog>
+        <Dialog open={openTds} fullWidth maxWidth="md" onClose={() => setOpenTds(false)}><ModalManageTds handleManageTdsClose={() => setOpenTds(false)} /></Dialog>
 
       </Box>
     </LocalizationProvider>

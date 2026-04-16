@@ -35,11 +35,8 @@ const RecurringInvoice = ({ onNewClick, onClose }) => {
   const [selectedStatus, setSelectedStatus] = useState("All");
 
   useEffect(() => {
-    // Mock data
-    setTableData([
-      { id: 1, name: "Maintenance Monthly", customer: "Sky High", frequency: "Monthly", last_date: "2026-03-01", next_date: "2026-04-01", status: "Active", amount: 5000 },
-      { id: 2, name: "Consulting Fee", customer: "Blue Star", frequency: "Weekly", last_date: "2026-04-01", next_date: "2026-04-08", status: "Active", amount: 2000 },
-    ]);
+    // Component mounted, no mock data
+    setTableData([]);
   }, []);
 
   const handleStatusMenuOpen = (event) => setAnchorEl(event.currentTarget);
@@ -158,26 +155,48 @@ const RecurringInvoice = ({ onNewClick, onClose }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {tableData.map((row) => (
-                <TableRow key={row.id} hover sx={{ cursor: "pointer" }}>
-                  <TableCell />
-                  <TableCell><Checkbox size="small" checked={selectedItems.includes(row.id)} onChange={e => handleCheckboxClick(e, row.id)}/></TableCell>
-                  <TableCell sx={{ fontSize: "14px", color: "#408DFB", fontWeight: 600 }}>{row.name}</TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>{row.customer}</TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>{row.frequency}</TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>{row.last_date}</TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>{row.next_date}</TableCell>
-                  <TableCell>
-                    <Typography sx={{ 
-                      fontSize: "11px", fontWeight: 700, px: 1, py: 0.2, borderRadius: 1, display: "inline-block",
-                      backgroundColor: "#e8f5e9", color: "#2e7d32"
-                    }}>
-                      {row.status.toUpperCase()}
-                    </Typography>
-                  </TableCell>
-                  <TableCell sx={{ fontSize: "13px" }}>₹{row.amount.toLocaleString()}</TableCell>
-                </TableRow>
-              ))}
+              {tableData.length === 0 ? (
+                  <TableRow>
+                      <TableCell colSpan={9} align="center" sx={{ py: 12, borderBottom: "none" }}>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                              <Box component="img" src="/src/assets/truck.png" sx={{ width: 180, opacity: 0.8, mb: 1 }} />
+                              <Typography sx={{ fontWeight: 800, fontSize: "1.4rem", color: "#666", letterSpacing: 1 }}>SCHWING STETTER</Typography>
+                              <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 450, mb: 2 }}>
+                                  Currently, no recurring invoices are available. Select 'Create New' to add a new one.
+                              </Typography>
+                              <Button 
+                                  variant="contained" 
+                                  startIcon={<AddIcon />}
+                                  onClick={onNewClick}
+                                  sx={{ bgcolor: "#408DFB", textTransform: "none", px: 4, py: 1 }}
+                              >
+                                  CREATE NEW
+                              </Button>
+                          </Box>
+                      </TableCell>
+                  </TableRow>
+              ) : (
+                tableData.map((row) => (
+                  <TableRow key={row.id} hover sx={{ cursor: "pointer" }}>
+                    <TableCell />
+                    <TableCell><Checkbox size="small" checked={selectedItems.includes(row.id)} onChange={e => handleCheckboxClick(e, row.id)}/></TableCell>
+                    <TableCell sx={{ fontSize: "14px", color: "#408DFB", fontWeight: 600 }}>{row.name}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.customer}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.frequency}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.last_date}</TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>{row.next_date}</TableCell>
+                    <TableCell>
+                      <Typography sx={{ 
+                        fontSize: "11px", fontWeight: 700, px: 1, py: 0.2, borderRadius: 1, display: "inline-block",
+                        backgroundColor: "#e8f5e9", color: "#2e7d32"
+                      }}>
+                        {row.status.toUpperCase()}
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ fontSize: "13px" }}>₹{row.amount.toLocaleString()}</TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>

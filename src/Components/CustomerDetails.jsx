@@ -136,8 +136,8 @@ export default function CustomerDetails({ mode = 'light' }) {
           alignItems: 'center',
           justifyContent: 'space-between',
           p: "10px 30px",
-          borderBottom: '1px solid #eee',
-          bgcolor: "#F9F9FB",
+          borderBottom: `1px solid ${mode === 'dark' ? '#333' : '#eee'}`,
+          bgcolor: mode === 'dark' ? '#1e1e1e' : '#F9F9FB',
           minHeight: "75px",
           position: 'sticky',
           top: 0,
@@ -152,7 +152,7 @@ export default function CustomerDetails({ mode = 'light' }) {
               <ArrowBackIosNewIcon sx={{ fontSize: 24 }} />
             </IconButton>
             <Box>
-              <Typography sx={{ fontWeight: 700, fontSize: "1.5rem", color: "#1a1a1a" }}>
+              <Typography sx={{ fontWeight: 700, fontSize: "1.5rem", color: mode === 'dark' ? '#fff' : '#1a1a1a' }}>
                 {machine.model || "Unknown Machine"}
               </Typography>
               <Typography variant="body2" color="text.secondary" fontWeight="600">
